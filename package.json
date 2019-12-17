@@ -1,0 +1,28 @@
+{
+  "name": "employee_tracker",
+  "version": "1.0.0",
+  "description": "dependencies for employee tracker app",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WilliamWhite86/employee_tracker.git"
+  },
+  "keywords": [
+    "inquirer",
+    "command-line"
+  ],
+  "author": "bilson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WilliamWhite86/employee_tracker/issues"
+  },
+  "homepage": "https://github.com/WilliamWhite86/employee_tracker#readme",
+  "dependencies": {
+    "inquirer": "^7.0.1",
+    "mysql": "^2.17.1"
+  }
+}
