@@ -10,10 +10,10 @@ const connection = mysql.createConnection({
 
 connection.connect();
 
-connection.query('SELECT * FROM department', function (error, results) {
-    if (error) throw error
-    console.table(results)
-})
+// connection.query('SELECT * FROM department', function (error, results) {
+//     if (error) throw error
+//     console.table(results)
+// })
 
 function firstPrompt() {
     return inquirer.prompt([
