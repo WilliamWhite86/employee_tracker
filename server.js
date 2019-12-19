@@ -1,6 +1,20 @@
 const inquirer = require("inquirer")
 const mysql = require("mysql")
+const cTable = require('console.table')
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'Mercury@02',
+    database: 'employees_db'
+})
 
+connection.connect();
+
+connection.query('SELECT * FROM department', function (error, results){
+    if (error) throw error;
+    console.log(results)})
+
+connection.end()
 
 function firstPrompt() {
     return inquirer.prompt([
