@@ -39,7 +39,10 @@ firstPrompt().then(function (value) {
             })
             break;
         case "view all employees by role":
-            console.log("query to view all employees by role")
+            PromptAllEmployeesbyRole().then(function (value){
+                allEmployeesbyRoleQuery(value)
+                connection.end()
+            })
             break;
         case "add employee":
             console.log("questions to add employee")
@@ -73,11 +76,36 @@ function PromptAllEmployeesbyDepartment() {
     ])
 }
 
+function PromptAllEmployeesbyRole() {
+    return inquirer.prompt([
+        {
+            type: "list",
+            name: "allroles",
+            choices: ["Attorney", "Paralegal","Accountant","Financial Analyst", "Sales Rep","Service Rep", "Developer", "Support Agent"]
+        }
+    ])
+}
+
 function allEmployeesbyDeptQuery(value) {
-    connection.query(`SELECT employee.first_name, employee.last_name, department.name FROM employee INNER JOIN role on employee.role_id = role.id INNER JOIN department on department.id = role.department_id WHERE department.name = '${value.alldepartments}';`, function (error, results) {
+    connection.query(`SELECT employee.first_name, employee.last_name, department.name` +
+    ` FROM employee INNER JOIN role on employee.role_id = role.id` +
+    ` INNER JOIN department on department.id = role.department_id` +
+    ` WHERE department.name = '${value.alldepartments}';`, 
+
+    function (error, results) {
         if (error) throw error
         console.table(results)
     })
+}
+
+function allEmployeesbyRoleQuery(value) {
+    connection.query(`SELECT employee.first_name, employee.last_name, role.title`
+    ` FROM employee RIGHT JOIN role on employee.role_id = role.id` 
+    ` WHERE role.title = '${value.allroles}';`, 
+    
+    function (error, results){
+    if (error) throw error
+    console.table(results)})
 }
 
 
