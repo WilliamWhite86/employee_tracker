@@ -63,14 +63,37 @@ LEFT JOIN role
 	on employee.role_id = role.id
 WHERE role.title = "Attorney";
 
-SELECT *   
+SELECT *
 FROM employee
 LEFT JOIN role
 	on employee.role_id = role.id
 LEFT JOIN employee as second_employee
 	on employee.manager_id = second_employee.id
-WHERE employee.manager_id = second_employee.id;
+WHERE employee.manager_id = second_employee.id OR employee.manager_id IS null;
 
+SELECT first_employee.*, second_employee.*
+FROM employee as first_employee
+LEFT JOIN employee as second_employee
+	on first_employee.manager_id = second_employee.id
+WHERE first_employee.manager_id = second_employee.id OR first_employee.manager_id IS null;
 
+SELECT * FROM employee as first_employee LEFT JOIN employee as second_employee on first_employee.manager_id = second_employee.id WHERE first_employee.manager_id = second_employee.id OR first_employee.manager_id IS null;
 
+SELECT first_employee.first_name, first_employee.last_name, second_employee.first_name as manager_first_name, second_employee.last_name as manager_last_name 
+FROM employee as first_employee 
+LEFT JOIN employee as second_employee 
+	on first_employee.manager_id = second_employee.id 
+WHERE first_employee.manager_id = second_employee.id OR first_employee.manager_id IS null;
 
+select * from employee;
+
+SELECT role.title 
+FROM role
+WHERE department_id = 1;
+
+SELECT employee.first_name, employee.last_name
+FROM employee
+WHERE employee.role_id = 3;
+
+INSERT INTO employee (id, column2, column3, ...)
+VALUES (value1, value2, value3, ...);
