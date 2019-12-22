@@ -47,16 +47,14 @@ firstPrompt().then(function (value) {
         case "add employee":
             PromptAddEmployee().then(function (value) {
                 console.log(value)
-                findRoleId(value)
-                //.then(function(value) {
-                    //console.log(value)
-                    //insertRole(value)
-                //})
+                insertEmployee(value)
                 connection.end()
             })
             break;
         case "remove employee":
-            console.log("questions to remove employee")
+            PromptRemoveEmployee().then(function (value) {
+                console.log(value)
+            })
             break;
         case "update employee role":
             console.log("questions to update employee role")
@@ -123,6 +121,34 @@ function PromptAddEmployee() {
     ])
 }
 
+function PromptRemoveEmployee() {
+    connection.query('SELECT first_employee.first_name, first_employee.last_name, second_employee.first_name as manager_first_name, second_employee.last_name as manager_last_name' +
+        ' FROM employee as first_employee' +
+        ' LEFT JOIN employee as second_employee' +
+        ' on first_employee.manager_id = second_employee.id' +
+        ' WHERE first_employee.manager_id = second_employee.id OR first_employee.manager_id IS null;',
+
+        function (error, results) {
+            if (error) throw error
+            let employeeArray = []
+            //console.log(results)
+            results.forEach((element) => {
+                //console.log(element);
+                employeeArray.push(element)
+                console.log(employeeArray)
+            });
+            // return inquirer.prompt([
+            //     {
+            //         type: "list",
+            //         name: "deletewhichemployee",
+            //         message: "which employee?",
+            //         choices:[results.lastname]
+            //     }
+            // ])
+        })
+
+}
+
 function allEmployeesbyDeptQuery(value) {
     connection.query(`SELECT employee.first_name, employee.last_name, department.name` +
         ` FROM employee INNER JOIN role on employee.role_id = role.id` +
@@ -146,20 +172,16 @@ function allEmployeesbyRoleQuery(value) {
         })
 }
 
-function findRoleId(value) {
-    var query = "SELECT employee.role_id ";
-    query += "FROM employee ";
-    query += "LEFT JOIN role ";
-        query += "on employee.role_id = role.id ";
-    query += "WHERE role.title = ? ";
-    connection.query(query, [value.role], function (err, res){
+function insertEmployee(value) {
+    var query = "INSERT INTO employee (first_name, last_name, role_id) VALUES ";
+    query += "(?, ?, (SELECT id from role WHERE title = ?))";
+
+    connection.query(query, [value.firstname, value.lastname, value.role], function (err, res) {
         console.log(res)
     })
 }
 
-function insertRole(value) {
-    console.log(value)
-}
+
 
 
 
