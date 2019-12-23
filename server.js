@@ -21,7 +21,7 @@ function firstPrompt() {
             type: "list",
             name: "toDo",
             message: "What what you like to do?",
-            choices: ["view all employees", "view all employees by department", "view all employees by role", "add employee", "remove employee", "update employee role", "view all roles"]
+            choices: ["view all employees", "view all employees by department", "view all employees by role", "add employee", "add department","add role", "remove employee","remove department", "remove role", "update employee role", "view all roles", "view all departments"]
         }
     ])
 }
@@ -36,26 +36,33 @@ firstPrompt().then(function (value) {
             PromptAllEmployeesbyDepartment()
             break;
         case "view all employees by role":
-            PromptAllEmployeesbyRole().then(function (value) {
-                allEmployeesbyRoleQuery(value)
-                connection.end()
-            })
+            PromptAllEmployeesbyRole()
             break;
         case "add employee":
             PromptAddEmployee().then(function (value) {
                 insertEmployee(value)
                 connection.end()
             })
+        case "add department":
+            console.log("add department")
             break;
+        case "add role":
+            console.log("add role")
         case "remove employee":
             PromptRemoveEmployee()
-            
             break;
+        case "remove department":
+            console.log("remove department")
+        case "remove role":
+            console.log("remove role")
         case "update employee role":
-            console.log("questions to update employee role")
+            PromptUpdateEmployeeRole()
             break;
         case "view all roles":
             console.log("query to view all roles")
+            break;
+        case "view all departments":
+            console.log("query to view all departments")
     }
 
 })
@@ -77,7 +84,7 @@ function allEmployeesQuery() {
 
 function PromptAllEmployeesbyDepartment() {
 
-    connection.query ('SELECT department.name FROM department;',
+    connection.query('SELECT department.name FROM department;',
 
         function (error, results) {
             if (error) throw error
@@ -85,28 +92,41 @@ function PromptAllEmployeesbyDepartment() {
             results.forEach((element) => {
                 deptArray.push(element.name)
 
-            });                
+            });
             return inquirer.prompt([
                 {
                     type: "list",
                     name: "alldepartments",
                     message: "which dept?",
-                    choices:deptArray
+                    choices: deptArray
                 },
             ]).then(function (value) {
-            allEmployeesbyDeptQuery(value)
-        })
+                allEmployeesbyDeptQuery(value)
+            })
         })
 }
 
 function PromptAllEmployeesbyRole() {
-    return inquirer.prompt([
-        {
-            type: "list",
-            name: "allroles",
-            choices: ["Attorney", "Paralegal", "Legal Manager", "Accountant", "Financial Analyst", "Finance Manager", "Sales Rep", "Service Rep", "Sales Manager", "Developer", "Support Agent", "IT Manager"]
-        }
-    ])
+
+    connection.query('SELECT role.title FROM role;',
+
+        function (error, results) {
+            if (error) throw error
+            let roleArray = []
+            results.forEach((element) => {
+                roleArray.push(element.title)
+
+            });
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    name: "allroles",
+                    choices: roleArray
+                },
+            ]).then(function (value) {
+                allEmployeesbyRoleQuery(value)
+            })
+        })
 }
 
 function PromptAddEmployee() {
@@ -130,6 +150,10 @@ function PromptAddEmployee() {
     ])
 }
 
+function PromptAddDepartment()
+
+function PromptAddRole()
+
 function PromptRemoveEmployee() {
     connection.query('SELECT employee.id, employee.first_name, employee.last_name FROM employee',
 
@@ -143,13 +167,13 @@ function PromptRemoveEmployee() {
                 employeeArray.push(name)
                 //console.log(employeeArray)
 
-            });                
+            });
             return inquirer.prompt([
                 {
                     type: "list",
                     name: "deletewhichemployee",
                     message: "which employee?",
-                    choices:employeeArray
+                    choices: employeeArray
                 }
             ]).then(function (value) {
                 getEmployeeid(value, deleteEmployee)
@@ -158,6 +182,12 @@ function PromptRemoveEmployee() {
         })
 
 }
+
+function PromptUpdateEmployeeRole() {}
+
+function allDepartmentsQuery()
+
+function allRolesQuery()
 
 function allEmployeesbyDeptQuery(value) {
     connection.query(`SELECT employee.first_name, employee.last_name, department.name` +
@@ -172,8 +202,8 @@ function allEmployeesbyDeptQuery(value) {
 }
 
 function allEmployeesbyRoleQuery(value) {
-    connection.query(`SELECT employee.first_name, employee.last_name, role.title`
-        ` FROM employee RIGHT JOIN role on employee.role_id = role.id`
+    connection.query(`SELECT employee.first_name, employee.last_name, role.title` +
+        ` FROM employee RIGHT JOIN role on employee.role_id = role.id` +
         ` WHERE role.title = '${value.allroles}';`,
 
         function (error, results) {
@@ -193,20 +223,18 @@ function insertEmployee(value) {
 
 function getEmployeeid(value, callback) {
     let employeename = value.deletewhichemployee
-    let employeeidString = employeename.substr(0,employeename.indexOf(' '))
+    let employeeidString = employeename.substr(0, employeename.indexOf(' '))
     let employeeid = parseInt(employeeidString)
     callback(employeeid)
-    //return employeeid
 }
 
-function deleteEmployee(employeeid){
-    console.log(typeof employeeid)    
+function deleteEmployee(employeeid) {
     var query = "DELETE FROM employee WHERE employee.id = ?";
 
     connection.query(query, [employeeid], function (error, results) {
         if (error) throw error
-         console.log(results)
-         connection.end()
+        console.log(results)
+        connection.end()
     })
 
 }
