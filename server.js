@@ -34,9 +34,6 @@ firstPrompt().then(function (value) {
             break;
         case "view all employees by department":
             PromptAllEmployeesbyDepartment()
-            //.then(function (value) {
-                //allEmployeesbyDeptQuery(value)
-            //})
             break;
         case "view all employees by role":
             PromptAllEmployeesbyRole().then(function (value) {
@@ -46,16 +43,15 @@ firstPrompt().then(function (value) {
             break;
         case "add employee":
             PromptAddEmployee().then(function (value) {
-                console.log(value)
                 insertEmployee(value)
                 connection.end()
             })
             break;
         case "remove employee":
             PromptRemoveEmployee()
-            //.then(function (value) {
-                //console.log(value)
-            //})
+                connection.end()
+            })
+            connection.end()
             break;
         case "update employee role":
             console.log("questions to update employee role")
@@ -88,11 +84,8 @@ function PromptAllEmployeesbyDepartment() {
         function (error, results) {
             if (error) throw error
             let deptArray = []
-            //console.log(results)
             results.forEach((element) => {
-                //console.log(element);
                 deptArray.push(element.name)
-                //console.log(employeeArray)
 
             });                
             return inquirer.prompt([
@@ -102,15 +95,10 @@ function PromptAllEmployeesbyDepartment() {
                     message: "which dept?",
                     choices:deptArray
                 },
-            ])
+            ]).then(function (value) {
+            allEmployeesbyDeptQuery(value)
         })
-    // return inquirer.prompt([
-    //     {
-    //         type: "list",
-    //         name: "alldepartments",
-    //         choices: ["Legal", "Sales", "Finance", "IT"]
-    //     }
-    // ])
+        })
 }
 
 function PromptAllEmployeesbyRole() {
@@ -139,25 +127,22 @@ function PromptAddEmployee() {
             type: "list",
             name: "role",
             message: "role?",
-            choices: ["Attorney", "Paralegal", "Legal Manager", "Accountant", "Financial Analyst", "Finance Manager", "Sales Rep", "Service Rep", "Sales Manager", "Developer", "Support Agent", "IT Manager"]
+            choices: roleArray
         }
     ])
 }
 
 function PromptRemoveEmployee() {
-    connection.query('SELECT first_employee.first_name, first_employee.last_name, second_employee.first_name as manager_first_name, second_employee.last_name as manager_last_name' +
-        ' FROM employee as first_employee' +
-        ' LEFT JOIN employee as second_employee' +
-        ' on first_employee.manager_id = second_employee.id' +
-        ' WHERE first_employee.manager_id = second_employee.id OR first_employee.manager_id IS null;',
+    connection.query('SELECT employee.id, employee.first_name, employee.last_name FROM employee',
 
         function (error, results) {
             if (error) throw error
             let employeeArray = []
             //console.log(results)
             results.forEach((element) => {
+                let name = element.id + ' ' + element.first_name + ' ' + element.last_name
                 //console.log(element);
-                employeeArray.push(element.first_name)
+                employeeArray.push(name)
                 //console.log(employeeArray)
 
             });                
@@ -168,7 +153,9 @@ function PromptRemoveEmployee() {
                     message: "which employee?",
                     choices:employeeArray
                 }
-            ])
+            ]).then(function (value) {
+                deleteEmployee(value)
+            })
 
         })
 
@@ -204,6 +191,23 @@ function insertEmployee(value) {
     connection.query(query, [value.firstname, value.lastname, value.role], function (err, res) {
         console.log(res)
     })
+}
+
+function getEmployeeid(value) {
+    console.log(value)
+    let employeename = value.deletewhichemployee
+    console.log (employeename)
+    let employeeid = employeename.substr(0,employeename.indexOf(' '))
+    return employeeid
+}
+
+function deleteEmployee(value){    
+    var query = "DELETE FROM employee WHERE employee.id = SELECT LEFT?";
+
+    connection.query(query, [employeeid], function (err, res) {
+         console.log(res)
+    })
+
 }
 
 
