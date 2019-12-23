@@ -49,9 +49,7 @@ firstPrompt().then(function (value) {
             break;
         case "remove employee":
             PromptRemoveEmployee()
-                connection.end()
-            })
-            connection.end()
+            
             break;
         case "update employee role":
             console.log("questions to update employee role")
@@ -154,7 +152,7 @@ function PromptRemoveEmployee() {
                     choices:employeeArray
                 }
             ]).then(function (value) {
-                deleteEmployee(value)
+                getEmployeeid(value, deleteEmployee)
             })
 
         })
@@ -193,19 +191,22 @@ function insertEmployee(value) {
     })
 }
 
-function getEmployeeid(value) {
-    console.log(value)
+function getEmployeeid(value, callback) {
     let employeename = value.deletewhichemployee
-    console.log (employeename)
-    let employeeid = employeename.substr(0,employeename.indexOf(' '))
-    return employeeid
+    let employeeidString = employeename.substr(0,employeename.indexOf(' '))
+    let employeeid = parseInt(employeeidString)
+    callback(employeeid)
+    //return employeeid
 }
 
-function deleteEmployee(value){    
-    var query = "DELETE FROM employee WHERE employee.id = SELECT LEFT?";
+function deleteEmployee(employeeid){
+    console.log(typeof employeeid)    
+    var query = "DELETE FROM employee WHERE employee.id = ?";
 
-    connection.query(query, [employeeid], function (err, res) {
-         console.log(res)
+    connection.query(query, [employeeid], function (error, results) {
+        if (error) throw error
+         console.log(results)
+         connection.end()
     })
 
 }
