@@ -33,10 +33,10 @@ firstPrompt().then(function (value) {
             connection.end()
             break;
         case "view all employees by department":
-            PromptAllEmployeesbyDepartment().then(function (value) {
-                allEmployeesbyDeptQuery(value)
-                connection.end()
-            })
+            PromptAllEmployeesbyDepartment()
+            //.then(function (value) {
+                //allEmployeesbyDeptQuery(value)
+            //})
             break;
         case "view all employees by role":
             PromptAllEmployeesbyRole().then(function (value) {
@@ -52,9 +52,10 @@ firstPrompt().then(function (value) {
             })
             break;
         case "remove employee":
-            PromptRemoveEmployee().then(function (value) {
-                console.log(value)
-            })
+            PromptRemoveEmployee()
+            //.then(function (value) {
+                //console.log(value)
+            //})
             break;
         case "update employee role":
             console.log("questions to update employee role")
@@ -81,13 +82,35 @@ function allEmployeesQuery() {
 }
 
 function PromptAllEmployeesbyDepartment() {
-    return inquirer.prompt([
-        {
-            type: "list",
-            name: "alldepartments",
-            choices: ["Legal", "Sales", "Finance", "IT"]
-        }
-    ])
+
+    connection.query ('SELECT department.name FROM department;',
+
+        function (error, results) {
+            if (error) throw error
+            let deptArray = []
+            //console.log(results)
+            results.forEach((element) => {
+                //console.log(element);
+                deptArray.push(element.name)
+                //console.log(employeeArray)
+
+            });                
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    name: "alldepartments",
+                    message: "which dept?",
+                    choices:deptArray
+                },
+            ])
+        })
+    // return inquirer.prompt([
+    //     {
+    //         type: "list",
+    //         name: "alldepartments",
+    //         choices: ["Legal", "Sales", "Finance", "IT"]
+    //     }
+    // ])
 }
 
 function PromptAllEmployeesbyRole() {
@@ -134,17 +157,19 @@ function PromptRemoveEmployee() {
             //console.log(results)
             results.forEach((element) => {
                 //console.log(element);
-                employeeArray.push(element)
-                console.log(employeeArray)
-            });
-            // return inquirer.prompt([
-            //     {
-            //         type: "list",
-            //         name: "deletewhichemployee",
-            //         message: "which employee?",
-            //         choices:[results.lastname]
-            //     }
-            // ])
+                employeeArray.push(element.first_name)
+                //console.log(employeeArray)
+
+            });                
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    name: "deletewhichemployee",
+                    message: "which employee?",
+                    choices:employeeArray
+                }
+            ])
+
         })
 
 }

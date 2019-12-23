@@ -91,9 +91,16 @@ SELECT role.title
 FROM role
 WHERE department_id = 1;
 
-SELECT employee.first_name, employee.last_name
+SELECT employee.role_id
 FROM employee
-WHERE employee.role_id = 3;
+LEFT JOIN role
+	on employee.role_id = role.id
+WHERE role.title = "Attorney";
 
-INSERT INTO employee (id, column2, column3, ...)
-VALUES (value1, value2, value3, ...);
+INSERT INTO employee (role_id)
+SELECT id FROM role;
+
+INSERT INTO employee (first_name, last_name, role_id) VALUES
+("SMEY", "WHITE", (SELECT id from role WHERE title = "Attorney"));
+
+SELECT * FROM employee;
