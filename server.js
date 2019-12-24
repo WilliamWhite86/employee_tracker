@@ -150,9 +150,9 @@ function PromptAddEmployee() {
     ])
 }
 
-function PromptAddDepartment()
+//function PromptAddDepartment()
 
-function PromptAddRole()
+//function PromptAddRole()
 
 function PromptRemoveEmployee() {
     connection.query('SELECT employee.id, employee.first_name, employee.last_name FROM employee',
@@ -171,7 +171,7 @@ function PromptRemoveEmployee() {
             return inquirer.prompt([
                 {
                     type: "list",
-                    name: "deletewhichemployee",
+                    name: "whichemployee",
                     message: "which employee?",
                     choices: employeeArray
                 }
@@ -183,11 +183,37 @@ function PromptRemoveEmployee() {
 
 }
 
-function PromptUpdateEmployeeRole() {}
+function PromptUpdateEmployeeRole() {
+    connection.query('SELECT employee.id, employee.first_name, employee.last_name FROM employee',
 
-function allDepartmentsQuery()
+    function (error, results) {
+        if (error) throw error
+        let employeeArray = []
+        //console.log(results)
+        results.forEach((element) => {
+            let name = element.id + ' ' + element.first_name + ' ' + element.last_name
+            //console.log(element);
+            employeeArray.push(name)
+            //console.log(employeeArray)
 
-function allRolesQuery()
+        });
+        return inquirer.prompt([
+            {
+                type: "list",
+                name: "whichemployee",
+                message: "which employee?",
+                choices: employeeArray
+            }
+        ]).then(function (value) {
+            getEmployeeid(value, getRoleName)
+        })
+
+    })
+}
+
+//function allDepartmentsQuery()
+
+//function allRolesQuery()
 
 function allEmployeesbyDeptQuery(value) {
     connection.query(`SELECT employee.first_name, employee.last_name, department.name` +
@@ -222,7 +248,7 @@ function insertEmployee(value) {
 }
 
 function getEmployeeid(value, callback) {
-    let employeename = value.deletewhichemployee
+    let employeename = value.whichemployee
     let employeeidString = employeename.substr(0, employeename.indexOf(' '))
     let employeeid = parseInt(employeeidString)
     callback(employeeid)
@@ -239,6 +265,49 @@ function deleteEmployee(employeeid) {
 
 }
 
+function getRoleName(employeeid) {
+    connection.query('SELECT role.id, role.title FROM role',
+
+    function (error, results) {
+        if (error) throw error
+        let roleArray = []
+        results.forEach((element) => {
+            let title = element.id + ' ' + element.title
+            roleArray.push(title)
+        });
+        return inquirer.prompt([
+            {
+                type: "list",
+                name: "whichrole",
+                message: "which role?",
+                choices: roleArray
+            }
+        ]).then(function (value) {
+            //getRoleId(value, getRoleName, employeeid)
+            getRoleId(value, employeeid, updateRole)
+        })
+
+    })
+}
+
+function getRoleId(value, employeeid, callback) {
+    let rolename = value.whichrole
+    let roleidString = rolename.substr(0, rolename.indexOf(' '))
+    let roleid = parseInt(roleidString)
+    callback(employeeid, roleid)
+}
+
+function updateRole(employeeid, roleid){
+    console.log(employeeid)
+    console.log(roleid)
+    var query = "UPDATE employee ";
+    query +="SET role_id = ? ";
+    query += "WHERE employee.id = ?;";
+
+    connection.query(query, [roleid, employeeid], function (err, res) {
+        console.log(res)
+    })
+}
 
 
 
