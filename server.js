@@ -21,7 +21,7 @@ function firstPrompt() {
             type: "list",
             name: "toDo",
             message: "What what you like to do?",
-            choices: ["view all employees", "view all employees by department", "view all employees by role", "add employee", "add department","add role", "remove employee","remove department", "remove role", "update employee role", "view all roles", "view all departments"]
+            choices: ["view all employees", "view all employees by department", "view all employees by role", "add employee", "add department", "add role", "remove employee", "remove department", "remove role", "update employee role", "view all roles", "view all departments"]
         }
     ])
 }
@@ -45,6 +45,10 @@ firstPrompt().then(function (value) {
             })
         case "add department":
             console.log("add department")
+            PromptAddDepartment().then(function (value) {
+                insertDepartment(value)
+                connection.end()
+            })
             break;
         case "add role":
             console.log("add role")
@@ -150,7 +154,18 @@ function PromptAddEmployee() {
     ])
 }
 
-//function PromptAddDepartment()
+function PromptAddDepartment() {
+    return inquirer.prompt([
+        {
+            type: "value",
+            name: "name",
+            message: "dept name?"
+        }])
+
+    // var query = "INSERT INTO department (name) ";
+    // query +="SET role_id = ? ";
+
+}
 
 //function PromptAddRole()
 
@@ -160,13 +175,9 @@ function PromptRemoveEmployee() {
         function (error, results) {
             if (error) throw error
             let employeeArray = []
-            //console.log(results)
             results.forEach((element) => {
                 let name = element.id + ' ' + element.first_name + ' ' + element.last_name
-                //console.log(element);
                 employeeArray.push(name)
-                //console.log(employeeArray)
-
             });
             return inquirer.prompt([
                 {
@@ -186,29 +197,25 @@ function PromptRemoveEmployee() {
 function PromptUpdateEmployeeRole() {
     connection.query('SELECT employee.id, employee.first_name, employee.last_name FROM employee',
 
-    function (error, results) {
-        if (error) throw error
-        let employeeArray = []
-        //console.log(results)
-        results.forEach((element) => {
-            let name = element.id + ' ' + element.first_name + ' ' + element.last_name
-            //console.log(element);
-            employeeArray.push(name)
-            //console.log(employeeArray)
+        function (error, results) {
+            if (error) throw error
+            let employeeArray = []
+            results.forEach((element) => {
+                let name = element.id + ' ' + element.first_name + ' ' + element.last_name
+                employeeArray.push(name)
+            });
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    name: "whichemployee",
+                    message: "which employee?",
+                    choices: employeeArray
+                }
+            ]).then(function (value) {
+                getEmployeeid(value, getRoleName)
+            })
 
-        });
-        return inquirer.prompt([
-            {
-                type: "list",
-                name: "whichemployee",
-                message: "which employee?",
-                choices: employeeArray
-            }
-        ]).then(function (value) {
-            getEmployeeid(value, getRoleName)
         })
-
-    })
 }
 
 //function allDepartmentsQuery()
@@ -247,6 +254,18 @@ function insertEmployee(value) {
     })
 }
 
+function insertDepartment(value) {
+    var query = "INSERT INTO department (name) VALUES (?)";
+    console.log(value.name)
+
+    connection.query(query, [value.name], function (err, res) {
+        if (err) throw err
+        console.log(res)
+    })
+}
+
+//function insertRole()
+
 function getEmployeeid(value, callback) {
     let employeename = value.whichemployee
     let employeeidString = employeename.substr(0, employeename.indexOf(' '))
@@ -268,26 +287,25 @@ function deleteEmployee(employeeid) {
 function getRoleName(employeeid) {
     connection.query('SELECT role.id, role.title FROM role',
 
-    function (error, results) {
-        if (error) throw error
-        let roleArray = []
-        results.forEach((element) => {
-            let title = element.id + ' ' + element.title
-            roleArray.push(title)
-        });
-        return inquirer.prompt([
-            {
-                type: "list",
-                name: "whichrole",
-                message: "which role?",
-                choices: roleArray
-            }
-        ]).then(function (value) {
-            //getRoleId(value, getRoleName, employeeid)
-            getRoleId(value, employeeid, updateRole)
-        })
+        function (error, results) {
+            if (error) throw error
+            let roleArray = []
+            results.forEach((element) => {
+                let title = element.id + ' ' + element.title
+                roleArray.push(title)
+            });
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    name: "whichrole",
+                    message: "which role?",
+                    choices: roleArray
+                }
+            ]).then(function (value) {
+                getRoleId(value, employeeid, updateRole)
+            })
 
-    })
+        })
 }
 
 function getRoleId(value, employeeid, callback) {
@@ -297,15 +315,16 @@ function getRoleId(value, employeeid, callback) {
     callback(employeeid, roleid)
 }
 
-function updateRole(employeeid, roleid){
+function updateRole(employeeid, roleid) {
     console.log(employeeid)
     console.log(roleid)
     var query = "UPDATE employee ";
-    query +="SET role_id = ? ";
+    query += "SET role_id = ? ";
     query += "WHERE employee.id = ?;";
 
     connection.query(query, [roleid, employeeid], function (err, res) {
         console.log(res)
+        connection.end()
     })
 }
 
