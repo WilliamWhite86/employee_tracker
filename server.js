@@ -10,11 +10,6 @@ const connection = mysql.createConnection({
 
 connection.connect();
 
-// connection.query('SELECT * FROM department', function (error, results) {
-//     if (error) throw error
-//     console.table(results)
-// })
-
 function firstPrompt() {
     return inquirer.prompt([
         {
@@ -44,29 +39,31 @@ firstPrompt().then(function (value) {
                 connection.end()
             })
         case "add department":
-            console.log("add department")
             PromptAddDepartment().then(function (value) {
                 insertDepartment(value)
                 connection.end()
             })
             break;
         case "add role":
-            console.log("add role")
+            PromptAddRole()
+            break;
         case "remove employee":
             PromptRemoveEmployee()
             break;
         case "remove department":
-            console.log("remove department")
+            PromptRemoveDept()
+            break
         case "remove role":
-            console.log("remove role")
+            PromptRemoveRole()
+            break
         case "update employee role":
             PromptUpdateEmployeeRole()
             break;
         case "view all roles":
-            console.log("query to view all roles")
+            allRolesQuery()
             break;
         case "view all departments":
-            console.log("query to view all departments")
+            allDeptsQuery()
     }
 
 })
@@ -162,12 +159,39 @@ function PromptAddDepartment() {
             message: "dept name?"
         }])
 
-    // var query = "INSERT INTO department (name) ";
-    // query +="SET role_id = ? ";
-
 }
 
-//function PromptAddRole()
+function PromptAddRole() {
+    connection.query("SELECT department.name FROM department;",
+        function (error, results) {
+            if (error) throw error
+            let deptArray = []
+            results.forEach((element) => {
+                deptArray.push(element.name)
+            });
+
+            return inquirer.prompt([
+                {
+                    type: "value",
+                    name: "name",
+                    message: "role name?"
+                },
+                {
+                    type: "value",
+                    name: "salary",
+                    message: "salary?"
+                },
+                {
+                    type: "list",
+                    name: "alldepartments",
+                    message: "which dept?",
+                    choices: deptArray
+                }
+            ]).then(function (value) {
+                insertRole(value)
+            })
+        })
+}
 
 function PromptRemoveEmployee() {
     connection.query('SELECT employee.id, employee.first_name, employee.last_name FROM employee',
@@ -194,6 +218,52 @@ function PromptRemoveEmployee() {
 
 }
 
+function PromptRemoveDept() {
+    connection.query('SELECT department.name FROM department',
+
+        function (error, results) {
+            if (error) throw error
+            let deptArray = []
+            results.forEach((element) => {
+                let name = element.name
+                deptArray.push(name)
+            });
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    name: "whichdept",
+                    message: "which dept?",
+                    choices: deptArray
+                }
+            ]).then(function (value) {
+                deleteDepartment(value)
+            })
+        })
+}
+
+function PromptRemoveRole() {
+    connection.query('SELECT role.title FROM role',
+
+        function (error, results) {
+            if (error) throw error
+            let roleArray = []
+            results.forEach((element) => {
+                let title = element.title
+                roleArray.push(title)
+            });
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    name: "whichrole",
+                    message: "which role?",
+                    choices: roleArray
+                }
+            ]).then(function (value) {
+                deleteRole(value)
+            })
+        })
+}
+
 function PromptUpdateEmployeeRole() {
     connection.query('SELECT employee.id, employee.first_name, employee.last_name FROM employee',
 
@@ -218,15 +288,8 @@ function PromptUpdateEmployeeRole() {
         })
 }
 
-//function allDepartmentsQuery()
-
-//function allRolesQuery()
-
-function allEmployeesbyDeptQuery(value) {
-    connection.query(`SELECT employee.first_name, employee.last_name, department.name` +
-        ` FROM employee INNER JOIN role on employee.role_id = role.id` +
-        ` INNER JOIN department on department.id = role.department_id` +
-        ` WHERE department.name = '${value.alldepartments}';`,
+function allRolesQuery() {
+    connection.query('SELECT role.title, department.name FROM role LEFT JOIN department ON role.department_id = department.id;',
 
         function (error, results) {
             if (error) throw error
@@ -234,15 +297,36 @@ function allEmployeesbyDeptQuery(value) {
         })
 }
 
-function allEmployeesbyRoleQuery(value) {
-    connection.query(`SELECT employee.first_name, employee.last_name, role.title` +
-        ` FROM employee RIGHT JOIN role on employee.role_id = role.id` +
-        ` WHERE role.title = '${value.allroles}';`,
+function allDeptsQuery() {
+    connection.query('SELECT department.name FROM department',
 
         function (error, results) {
             if (error) throw error
             console.table(results)
         })
+
+}
+
+function allEmployeesbyDeptQuery(value) {
+    var query = "SELECT employee.first_name, employee.last_name, role.title, department.name, role.salary, employee.manager_id";
+    query += " FROM employee";
+    query += " LEFT JOIN role on employee.role_id = role.id";
+    query += " LEFT JOIN department on department.id = role.department_id";
+    query += " WHERE department.name = ?";
+
+    connection.query(query, [value.alldepartments], function (err, res) {
+        console.table(res)
+    })
+}
+
+function allEmployeesbyRoleQuery(value) {
+    var query = "SELECT employee.first_name, employee.last_name, role.title FROM employee";
+    query += " LEFT JOIN role on employee.role_id = role.id";
+    query += " WHERE role.title = ?";
+
+    connection.query(query, [value.allroles], function (err, res) {
+        console.table(res)
+    })
 }
 
 function insertEmployee(value) {
@@ -264,7 +348,15 @@ function insertDepartment(value) {
     })
 }
 
-//function insertRole()
+function insertRole(value) {
+    var query = "INSERT INTO role (title, salary,department_id) VALUES ";
+    query += "(?, ?,(SELECT id from department WHERE name = ?))"
+    let salary = parseInt(value.salary)
+    console.log(value)
+    console.log(salary)
+
+    connection.query(query, [value.name], [salary], value.alldepartments)
+}
 
 function getEmployeeid(value, callback) {
     let employeename = value.whichemployee
@@ -282,6 +374,26 @@ function deleteEmployee(employeeid) {
         connection.end()
     })
 
+}
+
+function deleteDepartment(value) {
+    var query = "DELETE FROM department WHERE department.name = ?";
+
+    connection.query(query, [value.whichdept], function (error, results) {
+        if (error) throw error
+        console.log(results)
+        connection.end()
+    })
+}
+
+function deleteRole(value) {
+    var query = "DELETE FROM role WHERE role.title = ?";
+
+    connection.query(query, [value.whichrole], function (error, results) {
+        if (error) throw error
+        console.log(results)
+        connection.end()
+    })
 }
 
 function getRoleName(employeeid) {

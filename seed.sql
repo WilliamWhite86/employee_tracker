@@ -1,38 +1,3 @@
-DROP DATABASE IF EXISTS employees_db;
-
-CREATE DATABASE employees_db;
-
-USE employees_db;
-
-CREATE TABLE department (
-	id INT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(30) NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE role (
-	id INT NOT NULL AUTO_INCREMENT,
-    title VARCHAR(30) NOT NULL,
-    salary DECIMAL NOT NULL,
-    department_id INT NOT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT FK_DepartmentRole FOREIGN KEY (department_id)
-    REFERENCES department(id)
-);
-
-CREATE TABLE employee (
-	id INT NOT NULL AUTO_INCREMENT,
-    first_name VARCHAR(30) NOT NULL,
-    last_name VARCHAR(30) NOT NULL,
-    role_id INT NOT NULL,
-    manager_id INT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT FK_RoleEmployee FOREIGN KEY (role_id)
-    REFERENCES role(id),
-    CONSTRAINT FK_ManagerEmployee FOREIGN KEY (manager_id)
-    REFERENCES employee(id)
-);
-
 INSERT INTO department (name)
 VALUES ("LEGAL"),("FINANCE"),("SALES"),("IT");
 
@@ -97,10 +62,29 @@ LEFT JOIN role
 	on employee.role_id = role.id
 WHERE role.title = "Attorney";
 
-INSERT INTO employee (role_id)
-SELECT id FROM role;
-
 INSERT INTO employee (first_name, last_name, role_id) VALUES
 ("SMEY", "WHITE", (SELECT id from role WHERE title = "Attorney"));
 
 SELECT * FROM employee;
+
+SELECT department.name FROM department;
+
+INSERT INTO department (name)
+VALUES ("Human Resource");
+
+SELECT * FROM employee;
+
+DELETE FROM department WHERE name = "Legal";
+
+SELECT employee.first_name, employee.last_name, role.title
+		FROM employee RIGHT JOIN role on employee.role_id = role.id
+        WHERE role.title = "Attorney";
+        
+UPDATE employee
+SET role_id = 2
+WHERE employee.id = 1;
+
+INSERT INTO role (title,salary,department_id) VALUES
+("Secretary", 50000,(SELECT id from department WHERE name = "Legal"));
+
+SELECT * From role
