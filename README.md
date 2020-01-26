@@ -4,6 +4,6 @@
 
 * Application runs in node inquirer package, which is a command line application
 
-* There is no reason to advertise github pages.
+* There is no reason to advertise github pages because this is strictly a command-line application
 
 
